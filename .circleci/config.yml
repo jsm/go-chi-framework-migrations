@@ -1,0 +1,36 @@
+version: 2
+jobs:
+  build:
+    parallelism: 1
+    shell: /bin/bash --login -e -o pipefail
+    machine:
+      enabled: true
+      docker_layer_caching: true
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .git
+      - run: 
+          name: Check for Alembic conflicts
+          command: make check-alembic
+      - run:
+          name: Docker Build
+          command: docker build --rm=false -f Dockerfile -t $CIRCLE_SHA1 .
+      - deploy:
+          name: Deploy
+          command: |
+            if [ "$CIRCLE_BRANCH" == "master" ]; then
+              set -e
+              if make deploy-version-check; then
+                $(aws ecr get-login --no-include-email --region us-east-1)
+                (cd ./deploy && ./deploy-to-eb.sh $CIRCLE_SHA1 `cat ../VERSION`)
+                make tag
+              fi
+            fi

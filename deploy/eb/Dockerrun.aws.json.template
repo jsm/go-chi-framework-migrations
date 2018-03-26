@@ -1,0 +1,18 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "users",
+      "image": "996716936584.dkr.ecr.us-east-1.amazonaws.com/users:<TAG>",
+      "environment": [],
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 5000
+        }
+      ],
+      "essential": true,
+      "memoryReservation": "128"
+    }
+  ]
+}

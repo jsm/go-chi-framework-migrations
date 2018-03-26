@@ -1,0 +1,27 @@
+version: '3'
+services:
+  migrate:
+    container_name: migrate
+    build: .
+    environment:
+      - PG_USERNAME=postgres
+      - PG_HOST=pgsql
+      - PG_PASSWORD=''
+    depends_on:
+      - pgsql
+    volumes:
+      - .:/src
+  pgsql:
+    container_name: pgsql
+    image: mdillon/postgis:9.6-alpine
+    environment:
+      - POSTGRES_DB=users
+    volumes:
+      - ./tmp/data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+networks:
+  default:
+    external:
+      name: primordia
